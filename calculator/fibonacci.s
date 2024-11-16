@@ -27,7 +27,7 @@ fibonacci_main:
     bl printInt
 
     // Restore lr from the stack
-    ldp x1, lr, [sp], #16
+    ldp xzr, lr, [sp], #16
 
     ret
 

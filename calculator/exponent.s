@@ -34,7 +34,7 @@ exponent_main:
     bl printDouble
 
     // Restore lr from the stack
-    ldp x1, lr, [sp], #16
+    ldp xzr, lr, [sp], #16
 
     ret
 
