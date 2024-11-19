@@ -2,12 +2,14 @@
 #include <string.h>
 
 void calculator_mode() {
-    char input[256];
+    char input[1000];
     int rows, cols;
     int current_line = 2;
     getmaxyx(stdscr, rows, cols);
 
     while (1) {
+        memset(input, 0, sizeof(input)); //clear input
+
         move(current_line, 0);
         clrtoeol();
         printw(">>");
