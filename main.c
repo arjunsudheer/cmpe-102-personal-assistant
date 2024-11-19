@@ -12,6 +12,7 @@ enum State {
     EXIT
 };
 
+// Will move cursor to the bottom of the screen, displaying ':', waiting for command to be entered 
 void get_command(char* command) {
     int rows, cols;
     getmaxyx(stdscr, rows, cols);
@@ -20,7 +21,7 @@ void get_command(char* command) {
     printw(":");
     refresh();
 
-    move(rows - 1, 2);
+    move(rows - 1, 1);
     getstr(command);
 }
 
@@ -36,10 +37,11 @@ int main() {
     while (current_state != EXIT) {
         switch (current_state) {
             case MAIN_MENU:
+                noecho();
                 clear();
-                printw("Main Menu:\n");
-                printw("Press ':' to enter Command Mode.\n");
-                printw("Available commands: ':calc' for Calculator, ':todo' for To-Do List, ':quit' to exit.\n");
+                printw("Main Menu\n");
+                printw("Press ':' to enter Command Mode\n\n");
+                printw("Available commands\n':calc' for Calculator\n':todo' for To-Do List\n':quit' to exit.\n");
                 refresh();
 
                 int ch = getch(); // wait for a key press
@@ -53,21 +55,22 @@ int main() {
                 get_command(command); // get command starting with ':'
 
                 // command processing
-                if (strncmp(&command[1], "calc", 4) == 0) {
+                if (strncmp(&command[0], "calc", 4) == 0) {
                     current_state = CALCULATOR;
-                } else if (strncmp(&command[1], "todo", 4) == 0) {
+                } else if (strncmp(&command[0], "todo", 4) == 0) {
                     current_state = TODO_LIST;
-                } else if (strncmp(&command[1], "quit", 4) == 0) {
+                } else if (strncmp(&command[0], "quit", 4) == 0) {
                     current_state = EXIT;
+                    break;
                 } else {
                     printw("Unknown command. Please use ':calc', ':todo', or ':quit'.\n");
                     refresh();
                     getch(); //press any key to return to main menu mode
+                    current_state = MAIN_MENU;
+
                 }
 
                 memset(command, 0, sizeof(command));
-
-                current_state = MAIN_MENU;
                 break;
 
             case CALCULATOR:
