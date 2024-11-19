@@ -3,6 +3,7 @@
 
 #include <ncurses.h>
 #include <string.h>
+#include "calculator_mode.h"
 
 enum State {
     MAIN_MENU,
@@ -48,6 +49,8 @@ int main() {
                 if (ch == ':') {
 					echo();
                     current_state = COMMAND_MODE; // enter command Mode when ':' is pressed
+                } else {
+                    // Ignore input that is not ':'
                 }
                 break;
 
@@ -78,7 +81,7 @@ int main() {
                 printw("Calculator Mode: Perform your calculations here.\n");
                 printw("Press any key to return to the main menu.\n");
                 refresh();
-                getch(); 
+                calculator_mode();
                 current_state = MAIN_MENU;
                 break;
 
