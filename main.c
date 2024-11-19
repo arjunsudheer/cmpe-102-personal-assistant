@@ -79,7 +79,7 @@ int main() {
             case CALCULATOR:
                 clear();
                 printw("Calculator Mode: Perform your calculations here.\n");
-                printw("Press any key to return to the main menu.\n");
+                printw("Input 'quit' to exit.\n");
                 refresh();
                 calculator_mode();
                 current_state = MAIN_MENU;

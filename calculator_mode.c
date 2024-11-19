@@ -4,31 +4,44 @@
 void calculator_mode() {
     char input[256];
     int rows, cols;
+    int current_line = 2;
     getmaxyx(stdscr, rows, cols);
 
     while (1) {
-        move(rows - 2, 0);
+        move(current_line, 0);
         clrtoeol();
-        printw("Enter expression: ");
+        printw(">>");
         refresh();
 
-        // move(rows - 2, 17);
-        // getstr(input);
+        move(current_line, 3);
+        getstr(input);
 
         if (strncmp(input, "quit", 5) == 0) {
             break;
+        } else {
+            /*
+                THIS IS WHERE ARITHMETIC EXPRESSION WILL BE PARRSED AND RESLUT WILL BE CALCULATED
+                ALGORITHM: Shunting Yard
+                ASSEMBLY CALLS
+            */
         }
 
-        // clear();
-        // printw("You entered: %s\n", input);
-        // printw("Processing expression in Assembly...\n");
-        // refresh();
+        // Move to the next line for the "output"
+        current_line++;
+        move(current_line, 0);
+        clrtoeol();
+        printw("%s", "Result");
+        refresh();
 
-        // char result[256] = "Result from Assemblyto be implemented)";
-        // printw("Result: %s\n", result);
+        // Increment to the next line for the next input
+        current_line++;
 
-        printw("\nPress any key to enter another expression or ':quit' to exit.\n");
-        getch();
+        // If screen is full, then clear
+        if (current_line >= rows - 1) {
+            clear();
+            current_line = 0; 
+            refresh();
+        }
     }
 
     clear();
