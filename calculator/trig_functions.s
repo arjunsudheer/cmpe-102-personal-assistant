@@ -8,9 +8,6 @@ get_theta_input:
     bl getDouble
 
     bl check_for_invalid_angle
-    
-    // Precompute x^2 to use for future exponent terms
-    fmul d10, d0, d0
 
     // Restore lr from the stack
     ldp xzr, lr, [sp], #16
@@ -23,6 +20,7 @@ sin_main:
 
     bl get_theta_input
 
+    bl sin_init
     bl calculate_sin
 
     fmov d0, d9
@@ -33,61 +31,54 @@ sin_main:
 
     ret
 
-calculate_sin:
+sin_init:
     // Set approximation to start with initial value (x)
     fmov d9, d0
 
-    fmov d11, d10
-
-    // -x^3 / 3!
-    ldr x13, =three_factorial
-    ldr d13, [x13]
-    // x^3
+    // Precompute x^2 to use for future exponent terms
+    fmul d10, d0, d0
+    
+    // Used for increasing x by a power of 2
     fmul d11, d10, d0
-    // -x^3 / 6
-    fdiv d12, d11, d13
-    // Add to summation
-    fsub d9, d9, d12
 
-    // +x^5 / 5!
-    ldr x13, =five_factorial
-    ldr d13, [x13]
-    // x^5
-    fmul d11, d11, d10
-    // x^5 / 120
+    // Initialize sign as -1
+    mov x9, #-1
+
+    // Keep track of the number of terms
+    ldr x10, =num_terms
+    ldr x10, [x10]
+
+    // Keep track of the index for the factorial array
+    mov x11, #0
+
+    ret
+
+calculate_sin:
+    // Load factorial
+    ldr x13, =sin_factorials
+    ldr d13, [x13, x11, lsl #3]
+
+    // x^n / n!
     fdiv d12, d11, d13
-    // Add to summation
+    // Change the sign of the term based on the value in x9
+    scvtf d14, x9
+    fmul d12, d12, d14
+
+    // Add/subtract to/from result
     fadd d9, d9, d12
 
-    // -x^7 / 7!
-    ldr x13, =seven_factorial
-    ldr d13, [x13]
-    // x^7
-    fmul d11, d11, d10
-    // -x^7 / 7!
-    fdiv d12, d11, d13
-    // Add to summation
-    fsub d9, d9, d12
+    // Flip sign for next term
+    neg x9, x9
 
-    // -x^9 / 9!
-    ldr x13, =nine_factorial
-    ldr d13, [x13]
-    // x^7
-    fmul d11, d11, d10
-    // -x^7 / 7!
-    fdiv d12, d11, d13
-    // Add to summation
-    fadd d9, d9, d12
+    // Increment factorial array index by 1
+    add x11, x11, #1
 
-    // -x^11 / 11!
-    ldr x13, =eleven_factorial
-    ldr d13, [x13]
-    // x^7
+    // Mulitply by x^n to get the next power term in the Taylor Series
     fmul d11, d11, d10
-    // -x^7 / 7!
-    fdiv d12, d11, d13
-    // Add to summation
-    fsub d9, d9, d12
+
+    // Decrement loop counter
+    subs x10, x10, #1
+    bne calculate_sin
 
     ret
 
@@ -97,6 +88,7 @@ cos_main:
 
     bl get_theta_input
 
+    bl cos_init
     bl calculate_cos
 
     fmov d0, d9
@@ -107,60 +99,55 @@ cos_main:
 
     ret
 
-calculate_cos:
+cos_init:
     // Set approximation to start with initial value (x)
     ldr x9, =cos_initial_value
     ldr d9, [x9]
 
+    // Precompute x^2 to use for future exponent terms
+    fmul d10, d0, d0
+
+    // Used for increasing x by a power of 2
     fmov d11, d10
 
-    // -x^2 / 2!
-    ldr x13, =two_factorial
-    ldr d13, [x13]
-    // -x^2 / 2!
-    fdiv d12, d11, d13
-    // Add to summation
-    fsub d9, d9, d12
+    // Initialize sign as -1
+    mov x9, #-1
 
-    // +x^4 / 4!
-    ldr x13, =four_factorial
-    ldr d13, [x13]
-    // x^4
-    fmul d11, d11, d10
-    // x^4 / 4!
+    // Keep track of the number of terms
+    ldr x10, =num_terms
+    ldr x10, [x10]
+    
+    // Keep track of the index for the factorial array
+    mov x11, #0
+
+    ret
+
+calculate_cos:
+    // Load factorial
+    ldr x13, =cos_factorials
+    ldr d13, [x13, x11, lsl #3]
+
+    // x^n / n!
     fdiv d12, d11, d13
-    // Add to summation
+    // Change the sign of the term based on the value in x9
+    scvtf d14, x9
+    fmul d12, d12, d14
+
+    // Add/subtract to/from result
     fadd d9, d9, d12
 
-    // -x^6 / 6!
-    ldr x13, =six_factorial
-    ldr d13, [x13]
-    // x^6
-    fmul d11, d11, d10
-    // -x^6 / 6!
-    fdiv d12, d11, d13
-    // Add to summation
-    fsub d9, d9, d12
+    // Flip sign for next term
+    neg x9, x9
 
-    // -x^8 / 8!
-    ldr x13, =eight_factorial
-    ldr d13, [x13]
-    // x^8
-    fmul d11, d11, d10
-    // -x^8 / 8!
-    fdiv d12, d11, d13
-    // Add to summation
-    fadd d9, d9, d12
+    // Increment factorial array index by 1
+    add x11, x11, #1
 
-    // -x^10 / 10!
-    ldr x13, =ten_factorial
-    ldr d13, [x13]
-    // x^10
+    // Mulitply by x^n to get the next power term in the Taylor Series
     fmul d11, d11, d10
-    // -x^10 / 10!
-    fdiv d12, d11, d13
-    // Add to summation
-    fsub d9, d9, d12
+
+    // Decrement loop counter
+    subs x10, x10, #1
+    bne calculate_cos
 
     ret
 
@@ -171,23 +158,25 @@ tan_main:
     bl get_theta_input
 
     // sin(x)
+    bl sin_init
     bl calculate_sin
-    fmov d14, d9
-
-    // cos(x)
-    bl calculate_cos
     fmov d15, d9
 
+    // cos(x)
+    bl cos_init
+    bl calculate_cos
+    fmov d16, d9
+
     // Check if tan is undefined
-    ldr x17, =epsilon
-    ldr d17, [x17]
+    ldr x18, =epsilon
+    ldr d18, [x18]
     // |cos(x)|
-    fabs d16, d15
-    fcmp d16, d17
+    fabs d17, d16
+    fcmp d17, d18
     blt tan_undefined
 
     // sin(x) / cos(x)
-    fdiv d13, d14, d15
+    fdiv d13, d15, d16
 
     fmov d0, d13
     bl printDouble
@@ -231,19 +220,12 @@ invalid_angle:
 initial_theta: .double 0.0
 lower_threshold: .double -3.14
 upper_threshold: .double 3.14
+num_terms: .word 5
 // Used for sin approximation
-three_factorial: .double 6.0
-five_factorial: .double 120.0
-seven_factorial: .double 5040.0
-nine_factorial: .double 362880.0
-eleven_factorial: .double 39916800.0
+sin_factorials: .double 6.0, 120.0, 5040.0, 362880.0, 39916800.0
 // Used for cos approximation
-two_factorial: .double 2.0
-four_factorial: .double 24.0
-six_factorial: .double 720.0
-eight_factorial: .double 40320.0
-ten_factorial: .double 3628800.0
+cos_factorials: .double 2.0, 24.0, 720.0, 40320.0, 3628800.0
 cos_initial_value: .double 1.0
 // Used for tan approximation
-epsilon: .double 1e-4
+epsilon: .double 1e-3
 
