@@ -1,5 +1,3 @@
-.global basic_arithmetic_operations_main
-
 .text
 get_numbers_double:
     // Save lr to the stack
@@ -51,7 +49,6 @@ floating_point_addition_main:
 
     bl get_numbers_double
 
-    printStr "The sum is:"
 
     fadd d0, d9, d10
     bl printDouble
@@ -67,7 +64,6 @@ floating_point_subtraction_main:
 
     bl get_numbers_double
 
-    printStr "The difference is:"
 
     fsub d0, d9, d10
     bl printDouble
@@ -83,7 +79,6 @@ floating_point_multiplication_main:
 
     bl get_numbers_double
 
-    printStr "The product is:"
 
     fmul d0, d9, d10
     bl printDouble
@@ -99,7 +94,6 @@ floating_point_division_main:
 
     bl get_numbers_double
 
-    printStr "The quotient is:"
 
     fdiv d0, d9, d10
     bl printDouble
@@ -122,7 +116,6 @@ modulus_main:
     mul x2, x1, x10
     sub x0, x9, x2
 
-    printStr "The remainder is:"
     bl printInt
 
     // Restore lr from the stack

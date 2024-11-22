@@ -21,10 +21,10 @@ double getDouble(double *a)
 
 void printInt(int64_t value)
 {
-    printf("%ld\n", value);
+    printf("Ans: %ld\n", value);
 }
 
 void printDouble(double value)
 {
-    printf("%le\n", value);
+    printf("Ans: %le\n", value);
 }

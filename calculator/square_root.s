@@ -21,10 +21,8 @@ square_root_main:
     ldr x9, =half
     ldr d9, [x9]
     fmul d1, d0, d9
-    
-    bl calculate_herons_approximation
 
-    printStr "The square root approximation is:"
+    bl calculate_herons_approximation
 
     fmov d0, d1
     bl printDouble

@@ -23,7 +23,6 @@ fibonacci_main:
 
     bl fib
 
-    printStr "The fibonacci value is: "
     bl printInt
 
     // Restore lr from the stack

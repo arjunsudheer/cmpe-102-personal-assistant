@@ -17,8 +17,6 @@ exponent_main:
     // Save the exponent before it gets overwritten
     mov w2, w0
     
-    printStr "The exponent calculation value is: "
-
     // Load the base value
     ldr x9, =base
     ldr d1, [x9]
@@ -39,7 +37,7 @@ exponent_main:
     ret
 
 positive_exp:
-    // return if the x2 (the exponent) is less than or equal to 0
+    // return if the w2 (the exponent) is less than or equal to 0
     cmp w2, wzr
     ble end_exp
 
@@ -49,7 +47,7 @@ positive_exp:
     b positive_exp
 
 negative_exp:
-    // return if the x2 (the exponent) is greater than or equal to 0
+    // return if the w2 (the exponent) is greater than or equal to 0
     cmp w2, wzr
     bge end_exp
 

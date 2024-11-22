@@ -5,6 +5,7 @@
 .include "exponent.s"
 .include "square_root.s"
 .include "prime_number.s"
+.include "trig_functions.s"
 
 .global main
 
@@ -22,7 +23,10 @@ main:
     printStr "8) Exponent"
     printStr "9) Square Root"
     printStr "10) Is Prime"
-    printStr "11) Exit"
+    printStr "11) Sin"
+    printStr "12) Cos"
+    printStr "13) Tan"
+    printStr "14) Exit"
 
     ldr x0, =user_input
     bl get64BitInt
@@ -61,8 +65,17 @@ main:
 
     cmp x0, #10
     beq call_prime_number
-    
+
     cmp x0, #11
+    beq call_sin
+
+    cmp x0, #12
+    beq call_cos
+
+    cmp x0, #13
+    beq call_tan 
+    
+    cmp x0, #14
     beq exit
 
     b invalid_calculator_command
@@ -108,6 +121,18 @@ call_square_root:
 
 call_prime_number:
     bl prime_number_main
+    b main
+
+call_sin:
+    bl sin_main
+    b main
+
+call_cos:
+    bl cos_main
+    b main
+
+call_tan:
+    bl tan_main
     b main
 
 invalid_calculator_command:

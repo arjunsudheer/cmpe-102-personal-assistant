@@ -20,12 +20,11 @@ factorial_main:
     // Special case, 0! = 1
     beq zero_input
 
-    // Store the factorial in x0
+    // Store the factorial in w0
     mov w0, #1
 
     bl factorial
 
-    printStr "The factorial value is: "
     bl printInt
 
     // Restore lr from the stack
@@ -52,7 +51,6 @@ undefined_input:
 
 zero_input:
     mov x0, #1
-    printStr "The factorial value is: "
     bl printInt
 
 .data
