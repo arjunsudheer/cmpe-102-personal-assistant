@@ -6,6 +6,7 @@
 .include "square_root.s"
 .include "prime_number.s"
 .include "trig_functions.s"
+.include "logarithm.s"
 
 .global main
 
@@ -27,6 +28,7 @@ main:
     printStr "12) Cos"
     printStr "13) Tan"
     printStr "14) Exit"
+    printStr "15) Logarithm (Natural log)"
 
     ldr x0, =user_input
     bl get64BitInt
@@ -76,6 +78,9 @@ main:
     beq call_tan 
     
     cmp x0, #14
+    beq call_logarithm
+
+    cmp x0, #15
     beq exit
 
     b invalid_calculator_command
@@ -133,6 +138,10 @@ call_cos:
 
 call_tan:
     bl tan_main
+    b main
+    
+call_logarithm:
+    bl logarithm_main
     b main
 
 invalid_calculator_command:
