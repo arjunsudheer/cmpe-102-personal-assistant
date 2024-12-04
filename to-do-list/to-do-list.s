@@ -5,6 +5,7 @@
 .include "mark_completed.s"
 .include "display_completed_tasks.s"
 .include "prioritize_tasks.s"
+.include "focus_session.s"
 
 
 .global main
@@ -20,7 +21,8 @@ main:
     printStr "4) Mark Task as Completed"
     printStr "5) Display Completed Tasks"
     printStr "6) Prioritize Tasks"
-    printStr "7) Exit"
+    printStr "7) Focus Session"
+    printStr "8) Exit"
 
     // Get user input
     ldr x0, =user_input          // Address of user_input
@@ -51,6 +53,9 @@ main:
     beq call_prioritize_tasks
 
     cmp w0, #7
+    beq call_focus_session
+
+    cmp w0, #8
     beq exit
 
     // Handle invalid input
@@ -80,6 +85,10 @@ call_prioritize_tasks:
     bl prioritize_tasks_main
     b main
 
+call_focus_session:
+    bl focus_session_main
+    b main
+
 invalid_command:
     printStr "Invalid Command. Please try again."
     b main
@@ -92,6 +101,3 @@ exit:
     mov x0, #0
     mov x8, #93
     svc 0
-
-.data
-
