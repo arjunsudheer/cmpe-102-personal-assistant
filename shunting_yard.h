@@ -1,5 +1,5 @@
-#ifndef EXPRESSION_EVALUATOR_H
-#define EXPRESSION_EVALUATOR_H
+#ifndef SHUNTING_YARD_H
+#define SHUNTING_YARD_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,7 +16,7 @@ typedef struct {
     int count;
 } TokenList;
 
-// Public functions
+// Public function
 double evaluateExpression(const char *input);
 
 #endif

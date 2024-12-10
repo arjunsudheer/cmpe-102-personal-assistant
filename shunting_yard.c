@@ -1,13 +1,13 @@
-#include "expression_evaluator.h"
+#include "shunting_yard.h"
 
 // Global variables for RPN evaluation
-char outputQueue[MAX_STACK_SIZE][MAX_TOKEN_LENGTH];
-int outputQueueTop = 0;
+static char outputQueue[MAX_STACK_SIZE][MAX_TOKEN_LENGTH];
+static int outputQueueTop = 0;
 
-char operatorStack[MAX_STACK_SIZE][MAX_TOKEN_LENGTH];
-int operatorStackTop = -1;
+static char operatorStack[MAX_STACK_SIZE][MAX_TOKEN_LENGTH];
+static int operatorStackTop = -1;
 
-// Internal utility function prototypes
+// Utility function prototypes
 static TokenList tokenize(const char *input);
 static void processToken(const char *token);
 static void finalizeOutputQueue();
