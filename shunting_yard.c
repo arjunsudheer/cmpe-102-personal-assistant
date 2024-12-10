@@ -1,13 +1,11 @@
 #include "shunting_yard.h"
 
-// Global variables for RPN evaluation
 static char outputQueue[MAX_STACK_SIZE][MAX_TOKEN_LENGTH];
 static int outputQueueTop = 0;
 
 static char operatorStack[MAX_STACK_SIZE][MAX_TOKEN_LENGTH];
 static int operatorStackTop = -1;
 
-// Utility function prototypes
 static TokenList tokenize(const char *input);
 static void processToken(const char *token);
 static void finalizeOutputQueue();
@@ -28,50 +26,39 @@ static void processParenthesis(const char *token);
 static void processOperator(const char *operator);
 static void tokenizeUnaryMinus(TokenList *result, const char *input, int *i);
 
-// Evaluate the expression from input
 double evaluateExpression(const char *input) {
-    // Reset global variables
     outputQueueTop = 0;
     operatorStackTop = -1;
 
-    // Tokenize the input
     TokenList tokens = tokenize(input);
 
-    // Process each token
     for (int i = 0; i < tokens.count; i++) {
         processToken(tokens.tokens[i]);
     }
 
-    // Finalize the RPN output queue
+    //RPN output queue
     finalizeOutputQueue();
 
-    // Evaluate the RPN expression
+    // Evaluate 
     return evaluateRPN(outputQueue, outputQueueTop);
 }
 
-
-// Implementation of other internal functions (unchanged from your provided code)
-// Push to Output Queue
 void pushToOutputQueue(const char *token) {
     strcpy(outputQueue[outputQueueTop++], token);
 }
 
-// Push to Operator Stack
 void pushToOperatorStack(const char *token) {
     strcpy(operatorStack[++operatorStackTop], token);
 }
 
-// Pop from Operator Stack
 char* popFromOperatorStack() {
     return operatorStack[operatorStackTop--];
 }
 
-// Peek at the top of the Operator Stack
 char* peekOperatorStack() {
     return operatorStack[operatorStackTop];
 }
 
-// Precedence and associativity functions
 int getPrecedence(const char *op) {
     if (strcmp(op, "(") == 0 || strcmp(op, ")") == 0) return 0;
     if (strcmp(op, "sin") == 0 || strcmp(op, "cos") == 0 || strcmp(op, "tan") == 0 ||
@@ -89,25 +76,21 @@ int isRightAssociative(const char *op) {
     return 0;
 }
 
-// Check if a token is a function
 int isFunction(const char *token) {
     return strcmp(token, "sin") == 0 || strcmp(token, "cos") == 0 ||
            strcmp(token, "tan") == 0 || strcmp(token, "ln") == 0 ||
            strcmp(token, "sqrt") == 0;
 }
 
-// Check if a token is a number
 int isNumber(const char *token) {
-    if (token[0] == '-' && isdigit(token[1])) return 1; // Negative numbers
+    if (token[0] == '-' && isdigit(token[1])) return 1; 
     return isdigit(token[0]);
 }
 
-// Convert token to number
 double toNumber(const char *token) {
     return atof(token);
 }
 
-// Process operators
 void processOperator(const char *operator) {
     while (operatorStackTop >= 0) {
         char *top = peekOperatorStack();
@@ -121,7 +104,6 @@ void processOperator(const char *operator) {
     pushToOperatorStack(operator);
 }
 
-// Process parentheses
 void processParenthesis(const char *token) {
     if (strcmp(token, "(") == 0) {
         pushToOperatorStack(token);
@@ -140,7 +122,6 @@ void processParenthesis(const char *token) {
     }
 }
 
-// Process token
 void processToken(const char *token) {
     if (isNumber(token)) {
         pushToOutputQueue(token);
@@ -156,7 +137,6 @@ void processToken(const char *token) {
     }
 }
 
-// Finalize the output queue
 void finalizeOutputQueue() {
     while (operatorStackTop >= 0) {
         char *top = popFromOperatorStack();
@@ -168,7 +148,6 @@ void finalizeOutputQueue() {
     }
 }
 
-// Tokenize unary minus
 void tokenizeUnaryMinus(TokenList *result, const char *input, int *i) {
     int prevTokenIndex = result->count - 1;
     if (prevTokenIndex < 0 || strcmp(result->tokens[prevTokenIndex], "(") == 0 ||
@@ -180,7 +159,6 @@ void tokenizeUnaryMinus(TokenList *result, const char *input, int *i) {
     (*i)++;
 }
 
-// Tokenizer
 TokenList tokenize(const char *input) {
     TokenList result = {.count = 0};
     int i = 0;
@@ -224,10 +202,8 @@ double evaluateRPN(char rpn[][MAX_TOKEN_LENGTH], int rpnCount) {
         const char *token = rpn[i];
 
         if (isNumber(token)) {
-            // Push numbers to the stack
             stack[++stackTop] = toNumber(token);
         } else if (strcmp(token, "-u") == 0 || strcmp(token, "!") == 0) {
-            // Handle unary operators
             if (stackTop < 0) {
                 printf("Error: Insufficient operand for operator '%s'\n", token);
                 exit(EXIT_FAILURE);
@@ -235,7 +211,6 @@ double evaluateRPN(char rpn[][MAX_TOKEN_LENGTH], int rpnCount) {
             double operand = stack[stackTop--];
             stack[++stackTop] = applyUnaryOperator(token, operand);
         } else if (strchr("+-*/%^", token[0]) || strcmp(token, "^") == 0) {
-            // Handle binary operators
             if (stackTop < 1) {
                 printf("Error: Insufficient operands for operator '%s'\n", token);
                 exit(EXIT_FAILURE);
@@ -257,7 +232,6 @@ double evaluateRPN(char rpn[][MAX_TOKEN_LENGTH], int rpnCount) {
         }
     }
 
-    // Final result
     if (stackTop != 0) {
         printf("Error: Invalid RPN expression\n");
         exit(EXIT_FAILURE);
@@ -265,8 +239,6 @@ double evaluateRPN(char rpn[][MAX_TOKEN_LENGTH], int rpnCount) {
     return stack[stackTop];
 }
 
-
-// Apply basic operations
 double applyOperator(const char *op, double operand1, double operand2) {
     if (strcmp(op, "+") == 0) return operand1 + operand2;
     if (strcmp(op, "-") == 0) return operand1 - operand2;
@@ -278,7 +250,6 @@ double applyOperator(const char *op, double operand1, double operand2) {
     exit(EXIT_FAILURE);
 }
 
-// Apply unary operators
 double applyUnaryOperator(const char *op, double operand) {
     if (strcmp(op, "-u") == 0) return -operand;
     if (strcmp(op, "!") == 0) {
@@ -294,7 +265,6 @@ double applyUnaryOperator(const char *op, double operand) {
     exit(EXIT_FAILURE);
 }
 
-// Apply functions
 double applyFunction(const char *func, double operand) {
     if (strcmp(func, "sin") == 0) return sin(operand);
     if (strcmp(func, "cos") == 0) return cos(operand);
