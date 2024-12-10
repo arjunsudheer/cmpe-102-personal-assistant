@@ -1,5 +1,6 @@
 #include <ncurses.h>
 #include <string.h>
+#include "expression_evaluator.h"
 
 void calculator_mode() {
     char input[1000];
@@ -20,19 +21,15 @@ void calculator_mode() {
 
         if (strncmp(input, "quit", 5) == 0) {
             break;
-        } else {
-            /*
-                THIS IS WHERE ARITHMETIC EXPRESSION WILL BE PARRSED AND RESLUT WILL BE CALCULATED
-                ALGORITHM: Shunting Yard
-                ASSEMBLY CALLS
-            */
-        }
+        } 
 
         // Move to the next line for the "output"
         current_line++;
         move(current_line, 0);
         clrtoeol();
-        printw("%s", "Result");
+
+        double result = evaluateExpression(input);
+        printw("%.5f", result); // Display the result with 5 decimal places
         refresh();
 
         // Increment to the next line for the next input
