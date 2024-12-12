@@ -27,8 +27,8 @@ main:
     printStr "11) Sin"
     printStr "12) Cos"
     printStr "13) Tan"
-    printStr "14) Exit"
-    printStr "15) Logarithm (Natural log)"
+    printStr "14) Logarithm (Natural log)"
+    printStr "15) Exit"
 
     ldr x0, =user_input
     bl get64BitInt
