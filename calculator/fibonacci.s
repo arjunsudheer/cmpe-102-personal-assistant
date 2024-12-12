@@ -6,9 +6,9 @@ fibonacci_main:
     stp xzr, lr, [sp, #-16]!
 
     // Get input from C function
-    printStr "What fibonacci input would you like to calculate: "
-    ldr x0, =fibonacci_input
-    bl get64BitInt
+    //printStr "What fibonacci input would you like to calculate: "
+    //ldr x0, =fibonacci_input
+    //bl get64BitInt
 
     // Save the original input
     mov x1, x0
@@ -23,8 +23,7 @@ fibonacci_main:
 
     bl fib
 
-    printStr "The fibonacci value is: "
-    bl printInt
+    //bl printInt
 
     // Restore lr from the stack
     ldp xzr, lr, [sp], #16
@@ -64,7 +63,7 @@ end_fib:
     ret
 
 invalid_input:
-    printStr "Invalid Input"
+    //printStr "Invalid Input"
     ret
 
 .data

@@ -5,63 +5,58 @@ exponent_main:
     // Save lr to the stack
     stp xzr, lr, [sp, #-16]!
 
-    // Get input from C function
-    printStr "What is the base: "
-    ldr x0, =base
-    bl getDouble
+    fcvtzs x2, d1           
 
-    printStr "What is the exponent: "
-    ldr x0, =exp
-    bl get32BitInt
+    cmp x2, #0
+    beq return_one           
 
-    // Save the exponent before it gets overwritten
-    mov w2, w0
-    
-    printStr "The exponent calculation value is: "
+    cmp x2, #0
+    blt negative_exp        
 
-    // Load the base value
-    ldr x9, =base
-    ldr d1, [x9]
-
-    // Set the initial value for the exponent result calculation
-    // Load the base value
-    ldr x9, =one
-    ldr d0, [x9]
-
-    bl negative_exp
     bl positive_exp
 
-    bl printDouble
-
-    // Restore lr from the stack
+    // Restore lr and return
     ldp xzr, lr, [sp], #16
+    ret
 
+negative_exp:
+    neg x2, x2               
+    ldr x9, =one            
+    ldr d3, [x9]            
+
+neg_loop:
+    cmp x2, #0               
+    beq neg_end              
+    fdiv d3, d3, d0          
+    sub x2, x2, #1           
+    b neg_loop             
+
+neg_end:
+    fmov d0, d3             
+    ldp xzr, lr, [sp], #16  
     ret
 
 positive_exp:
-    // return if the x2 (the exponent) is less than or equal to 0
-    cmp w2, wzr
-    ble end_exp
+    ldr x9, =one            
+    ldr d3, [x9]             
 
-    fmul d0, d0, d1
+pos_loop:
+    cmp x2, #0               
+    beq pos_end              
+    fmul d3, d3, d0          
+    sub x2, x2, #1           
+    b pos_loop               
 
-    sub w2, w2, #1
-    b positive_exp
+pos_end:
+    fmov d0, d3              
+    ldp xzr, lr, [sp], #16  
+    ret
 
-negative_exp:
-    // return if the x2 (the exponent) is greater than or equal to 0
-    cmp w2, wzr
-    bge end_exp
-
-    fdiv d0, d0, d1
-
-    add w2, w2, #1
-    b negative_exp
-
-end_exp:
+return_one:
+    ldr x9, =one            
+    ldr d0, [x9]             
+    ldp xzr, lr, [sp], #16   
     ret
 
 .data
-base : .double 0.0
-exp : .fill 1, 8, 0
 one: .double 1.0

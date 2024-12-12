@@ -14,6 +14,7 @@
 typedef struct {
     char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH];
     int count;
+    int error;
 } TokenList;
 
 // Public function

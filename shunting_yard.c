@@ -1,5 +1,19 @@
 #include "shunting_yard.h"
 
+extern double square_root(double operand);
+extern double sin_main(double operand);
+extern double cos_main(double operand);
+extern double tan_main(double operand);
+extern double logarithm_main(double operand);
+extern double exponent_main(double operand1, double operand2);
+extern long factorial_main(long input);
+extern double floating_point_addition_main(double, double);
+extern double floating_point_subtraction_main(double, double);
+extern double floating_point_multiplication_main(double, double);
+extern double floating_point_division_main(double, double);
+extern int modulus_main(int, int);
+extern int fibonacci_main(int n);
+
 static char outputQueue[MAX_STACK_SIZE][MAX_TOKEN_LENGTH];
 static int outputQueueTop = 0;
 
@@ -7,8 +21,8 @@ static char operatorStack[MAX_STACK_SIZE][MAX_TOKEN_LENGTH];
 static int operatorStackTop = -1;
 
 static TokenList tokenize(const char *input);
-static void processToken(const char *token);
-static void finalizeOutputQueue();
+static int processToken(const char *token);
+static int finalizeOutputQueue();
 static double evaluateRPN(char rpn[][MAX_TOKEN_LENGTH], int rpnCount);
 static void pushToOutputQueue(const char *token);
 static void pushToOperatorStack(const char *token);
@@ -22,7 +36,7 @@ static double toNumber(const char *token);
 static double applyOperator(const char *op, double operand1, double operand2);
 static double applyUnaryOperator(const char *op, double operand);
 static double applyFunction(const char *func, double operand);
-static void processParenthesis(const char *token);
+static int processParenthesis(const char *token);
 static void processOperator(const char *operator);
 static void tokenizeUnaryMinus(TokenList *result, const char *input, int *i);
 
@@ -31,15 +45,23 @@ double evaluateExpression(const char *input) {
     operatorStackTop = -1;
 
     TokenList tokens = tokenize(input);
-
-    for (int i = 0; i < tokens.count; i++) {
-        processToken(tokens.tokens[i]);
+    if (tokens.error) {
+        printf("Error: Tokenization failed.\n");
+        return NAN;
     }
 
-    //RPN output queue
-    finalizeOutputQueue();
+    for (int i = 0; i < tokens.count; i++) {
+        if (processToken(tokens.tokens[i]) < 0) {
+            printf("Error: Token processing failed.\n");
+            return NAN;
+        }
+    }
 
-    // Evaluate 
+    if (finalizeOutputQueue() < 0) {
+        printf("Error: Finalizing output queue failed.\n");
+        return NAN;
+    }
+
     return evaluateRPN(outputQueue, outputQueueTop);
 }
 
@@ -62,7 +84,7 @@ char* peekOperatorStack() {
 int getPrecedence(const char *op) {
     if (strcmp(op, "(") == 0 || strcmp(op, ")") == 0) return 0;
     if (strcmp(op, "sin") == 0 || strcmp(op, "cos") == 0 || strcmp(op, "tan") == 0 ||
-        strcmp(op, "ln") == 0 || strcmp(op, "sqrt") == 0) return 4;
+        strcmp(op, "ln") == 0 || strcmp(op, "sqrt") == 0 || strcmp(op, "fib") == 0) return 4;
     if (strcmp(op, "!") == 0) return 4;
     if (strcmp(op, "^") == 0) return 3;
     if (strcmp(op, "-u") == 0) return 3;
@@ -79,7 +101,7 @@ int isRightAssociative(const char *op) {
 int isFunction(const char *token) {
     return strcmp(token, "sin") == 0 || strcmp(token, "cos") == 0 ||
            strcmp(token, "tan") == 0 || strcmp(token, "ln") == 0 ||
-           strcmp(token, "sqrt") == 0;
+           strcmp(token, "sqrt") == 0 || strcmp(token, "fib") == 0;
 }
 
 int isNumber(const char *token) {
@@ -104,7 +126,7 @@ void processOperator(const char *operator) {
     pushToOperatorStack(operator);
 }
 
-void processParenthesis(const char *token) {
+int processParenthesis(const char *token) {
     if (strcmp(token, "(") == 0) {
         pushToOperatorStack(token);
     } else if (strcmp(token, ")") == 0) {
@@ -113,16 +135,17 @@ void processParenthesis(const char *token) {
         }
         if (operatorStackTop < 0) {
             printf("Error: Mismatched parentheses\n");
-            exit(EXIT_FAILURE);
+            return -1;
         }
         popFromOperatorStack();
         if (operatorStackTop >= 0 && isFunction(peekOperatorStack())) {
             pushToOutputQueue(popFromOperatorStack());
         }
     }
+    return 0;
 }
 
-void processToken(const char *token) {
+int processToken(const char *token) {
     if (isNumber(token)) {
         pushToOutputQueue(token);
     } else if (isFunction(token)) {
@@ -133,19 +156,21 @@ void processToken(const char *token) {
         processOperator(token);
     } else {
         printf("Error: Unknown token '%s'\n", token);
-        exit(EXIT_FAILURE);
+        return -1;
     }
+    return 0;
 }
 
-void finalizeOutputQueue() {
+int finalizeOutputQueue() {
     while (operatorStackTop >= 0) {
         char *top = popFromOperatorStack();
         if (strcmp(top, "(") == 0) {
             printf("Error: Mismatched parentheses\n");
-            exit(EXIT_FAILURE);
+            return -1;
         }
         pushToOutputQueue(top);
     }
+    return 0;
 }
 
 void tokenizeUnaryMinus(TokenList *result, const char *input, int *i) {
@@ -160,7 +185,7 @@ void tokenizeUnaryMinus(TokenList *result, const char *input, int *i) {
 }
 
 TokenList tokenize(const char *input) {
-    TokenList result = {.count = 0};
+    TokenList result = {.count = 0, .error = 0};
     int i = 0;
 
     while (input[i] != '\0') {
@@ -188,7 +213,8 @@ TokenList tokenize(const char *input) {
             i++;
         } else {
             printf("Error: Invalid character '%c'\n", input[i]);
-            exit(EXIT_FAILURE);
+            result.error = 1;
+            return result;
         }
     }
     return result;
@@ -206,14 +232,14 @@ double evaluateRPN(char rpn[][MAX_TOKEN_LENGTH], int rpnCount) {
         } else if (strcmp(token, "-u") == 0 || strcmp(token, "!") == 0) {
             if (stackTop < 0) {
                 printf("Error: Insufficient operand for operator '%s'\n", token);
-                exit(EXIT_FAILURE);
+                return NAN;
             }
             double operand = stack[stackTop--];
             stack[++stackTop] = applyUnaryOperator(token, operand);
         } else if (strchr("+-*/%^", token[0]) || strcmp(token, "^") == 0) {
             if (stackTop < 1) {
                 printf("Error: Insufficient operands for operator '%s'\n", token);
-                exit(EXIT_FAILURE);
+                return NAN;
             }
             double operand2 = stack[stackTop--];
             double operand1 = stack[stackTop--];
@@ -222,32 +248,32 @@ double evaluateRPN(char rpn[][MAX_TOKEN_LENGTH], int rpnCount) {
             // Handle functions
             if (stackTop < 0) {
                 printf("Error: Insufficient operand for function '%s'\n", token);
-                exit(EXIT_FAILURE);
+                return NAN;
             }
             double operand = stack[stackTop--];
             stack[++stackTop] = applyFunction(token, operand);
         } else {
             printf("Error: Unknown token '%s'\n", token);
-            exit(EXIT_FAILURE);
+            return NAN;
         }
     }
 
     if (stackTop != 0) {
         printf("Error: Invalid RPN expression\n");
-        exit(EXIT_FAILURE);
+        return NAN;
     }
     return stack[stackTop];
 }
 
 double applyOperator(const char *op, double operand1, double operand2) {
-    if (strcmp(op, "+") == 0) return operand1 + operand2;
-    if (strcmp(op, "-") == 0) return operand1 - operand2;
-    if (strcmp(op, "*") == 0) return operand1 * operand2;
-    if (strcmp(op, "/") == 0) return operand1 / operand2;
-    if (strcmp(op, "%") == 0) return fmod(operand1, operand2);
-    if (strcmp(op, "^") == 0) return pow(operand1, operand2);
+    if (strcmp(op, "+") == 0) return operand1 + operand2; //floating_point_addition_main(operand1, operand2);
+    if (strcmp(op, "-") == 0) return floating_point_subtraction_main(operand1, operand2);
+    if (strcmp(op, "*") == 0) return operand1 * operand2; //floating_point_multiplication_main(operand1, operand2);
+    if (strcmp(op, "/") == 0) return floating_point_division_main(operand1, operand2);
+    if (strcmp(op, "%") == 0) return modulus_main(operand1, operand2);
+    if (strcmp(op, "^") == 0) return exponent_main(operand1, operand2);
     printf("Error: Unknown operator '%s'\n", op);
-    exit(EXIT_FAILURE);
+    return NAN;
 }
 
 double applyUnaryOperator(const char *op, double operand) {
@@ -255,22 +281,30 @@ double applyUnaryOperator(const char *op, double operand) {
     if (strcmp(op, "!") == 0) {
         if (operand < 0 || operand != (int)operand) {
             printf("Error: Factorial is only defined for non-negative integers\n");
-            exit(EXIT_FAILURE);
+            return NAN;
         }
-        double result = 1;
-        for (int i = 1; i <= (int)operand; i++) result *= i;
+        double result = factorial_main(operand);
         return result;
     }
     printf("Error: Unknown unary operator '%s'\n", op);
-    exit(EXIT_FAILURE);
+    return NAN;
 }
 
 double applyFunction(const char *func, double operand) {
-    if (strcmp(func, "sin") == 0) return sin(operand);
-    if (strcmp(func, "cos") == 0) return cos(operand);
-    if (strcmp(func, "tan") == 0) return tan(operand);
-    if (strcmp(func, "ln") == 0) return log(operand);
-    if (strcmp(func, "sqrt") == 0) return sqrt(operand);
+    if (strcmp(func, "sin") == 0) return sin_main(operand);
+    if (strcmp(func, "cos") == 0) return cos_main(operand);
+    if (strcmp(func, "tan") == 0) return tan_main(operand);
+    if (strcmp(func, "ln") == 0) return logarithm_main(operand);
+    if (strcmp(func, "sqrt") == 0) return square_root(operand);
+    if (strcmp(func, "fib") == 0) {
+        if ((int)operand < 0) {
+            return NAN;
+        }
+        return fibonacci_main((int)operand);
+    }
+
     printf("Error: Unknown function '%s'\n", func);
-    exit(EXIT_FAILURE);
+    return NAN;
 }
+
+

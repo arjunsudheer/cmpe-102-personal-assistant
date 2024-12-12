@@ -1,135 +1,46 @@
-.global basic_arithmetic_operations_main
+.global floating_point_addition_main
+.global floating_point_subtraction_main
+.global floating_point_multiplication_main
+.global floating_point_division_main
+.global modulus_main
 
 .text
-get_numbers_double:
-    // Save lr to the stack
-    stp xzr, lr, [sp, #-16]!
-
-    printStr "Please enter the first number:"
-    ldr x0, =num_one
-    bl getDouble
-
-    printStr "Please enter the second number:"
-    ldr x0, =num_two
-    bl getDouble
-    fmov d10, d0
-
-    // Load the first number
-    ldr x9, =num_one
-    ldr d9, [x9]
-
-    // Restore lr from the stack
-    ldp xzr, lr, [sp], #16
-
-    ret
-
-get_numbers_integer:
-    // Save lr to the stack
-    stp xzr, lr, [sp, #-16]!
-
-    printStr "Please enter the first number:"
-    ldr x0, =num_one
-    bl get64BitInt
-
-    printStr "Please enter the second number:"
-    ldr x0, =num_two
-    bl get64BitInt
-    mov x10, x0
-
-    // Load the first number
-    ldr x11, =num_one
-    ldr x9, [x11]
-
-    // Restore lr from the stack
-    ldp xzr, lr, [sp], #16
-
-    ret
 
 floating_point_addition_main:
-    // Save lr to the stack
-    stp xzr, lr, [sp, #-16]!
-
-    bl get_numbers_double
-
-    printStr "The sum is:"
-
-    fadd d0, d9, d10
-    bl printDouble
-
-    // Restore lr from the stack
-    ldp xzr, lr, [sp], #16
-
-    ret
+    fadd d0, d0, d1        
+    ret                       
 
 floating_point_subtraction_main:
-    // Save lr to the stack
-    stp xzr, lr, [sp, #-16]!
-
-    bl get_numbers_double
-
-    printStr "The difference is:"
-
-    fsub d0, d9, d10
-    bl printDouble
-
-    // Restore lr from the stack
-    ldp xzr, lr, [sp], #16
-
-    ret
+    fsub d0, d0, d1           
+    ret                       
 
 floating_point_multiplication_main:
-    // Save lr to the stack
-    stp xzr, lr, [sp, #-16]!
-
-    bl get_numbers_double
-
-    printStr "The product is:"
-
-    fmul d0, d9, d10
-    bl printDouble
-
-    // Restore lr from the stack
-    ldp xzr, lr, [sp], #16
-
-    ret
+    fmul d0, d0, d1           
+    ret                       
 
 floating_point_division_main:
-    // Save lr to the stack
-    stp xzr, lr, [sp, #-16]!
+    fcmp d1, #0.0           
+    b.eq division_by_zero     
+    fdiv d0, d0, d1          
+    ret                       
 
-    bl get_numbers_double
-
-    printStr "The quotient is:"
-
-    fdiv d0, d9, d10
-    bl printDouble
-
-    // Restore lr from the stack
-    ldp xzr, lr, [sp], #16
-
+division_by_zero:
+    ldr x9, =nan_value        
+    ldr d0, [x9]
     ret
 
 modulus_main:
-    // Save lr to the stack
-    stp xzr, lr, [sp, #-16]!
+    cmp x1, #0                
+    b.eq modulus_by_zero      
 
-    ldr x12, =num_two
-    ldr x10, [x12]
+    sdiv x2, x0, x1           
+    mul x2, x2, x1            
+    sub x0, x0, x2            
+    ret                       
 
-    bl get_numbers_integer
-
-    sdiv x1, x9, x10
-    mul x2, x1, x10
-    sub x0, x9, x2
-
-    printStr "The remainder is:"
-    bl printInt
-
-    // Restore lr from the stack
-    ldp x1, lr, [sp], #16
-
+modulus_by_zero:
+    mov x0, #0                
     ret
 
 .data
-num_one: .double 0.0
-num_two: .double 0.0
+nan_value: .quad 0x7FF8000000000000  

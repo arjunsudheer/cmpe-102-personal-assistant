@@ -8,24 +8,21 @@
 int main() {
     char input[MAX_INPUT];
 
-    printf("Simple Calculator\n");
     printf("Enter mathematical expressions or type 'quit' to exit.\n\n");
 
     while (1) {
         printf(">> ");
         if (!fgets(input, MAX_INPUT, stdin)) {
-            break; // Exit on EOF
+            break; 
         }
 
-        // Remove newline character if present
         input[strcspn(input, "\n")] = '\0';
 
-        // Exit condition
         if (strcmp(input, "quit") == 0) {
             break;
         }
 
-        // Evaluate the expression
+        // Evaluate
         double result = evaluateExpression(input);
         printf("= %.5f\n", result);
     }
