@@ -1,16 +1,19 @@
-.ifndef SHARED_DATA_INCLUDED   // Start guard
+// Start guard
+.ifndef SHARED_DATA_INCLUDED
 .set SHARED_DATA_INCLUDED, 1
 
 .data
-    task_count: .word 0                  // Number of tasks in the to-do list
-    tasks: .space 1024                   // Task descriptions (128 tasks, 256 bytes each)
-    completed_task_count: .word 0        // Number of completed tasks
-    completed_tasks: .space 1024         // Completed task descriptions
-    priority_task_count: .word 0         // Number of prioritized tasks
-    priority_tasks: .space 1024          // Prioritized task descriptions
-    task_priorities: .space 128          // Task priorities (1 byte per task)
-    task_index: .word 0                  // Temporary variable for task index
-    user_input: .word 0                  // Temporary variable for user input
+    // Task descriptions (128 task each taking 4 bytes)
+    tasks: .space 128 * 4
+    // Total number of tasks in the array
+    total_tasks: .byte 0
 
-.endif                                  // End guard
+    // Indices for task sections in the tasks array
+    priority_task_index: .byte 0
+    task_index: .byte 0
+    completed_task_index: .byte 0
 
+    // Temporary variable for user input
+    user_input: .space 256
+// End guard
+.endif

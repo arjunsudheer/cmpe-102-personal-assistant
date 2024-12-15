@@ -14,7 +14,7 @@ focus_session_main:
     cmp x0, #0
     ble invalid_focus_session_length
 
-    printStr "Starting your focus session."
+    printStr "Your focus session has started."
 
     // Read the frequency of the counter in Hz (cycles per second)
     mrs x1, CNTFRQ_EL0

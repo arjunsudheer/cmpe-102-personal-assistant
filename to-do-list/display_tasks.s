@@ -8,48 +8,72 @@ display_tasks_main:
     // Save lr to the stack
     stp xzr, lr, [sp, #-16]!
 
-    // Load the task count
-    ldr x0, =task_count          // Address of task_count
-    ldr w1, [x0]                 // Load task count into w1
-    cmp w1, #0                   // Check if there are tasks
-    b.eq no_tasks                // If no tasks, display a message
+    // Find how many total tasks need to be displayed
+    ldr x0, =total_tasks
+    ldrb w11, [x0]
 
-    // Print header
-    printStr "To-Do List:\n"
-    mov w2, #0                   // Initialize index (w2)
+    // Check if the task list is empty
+    cbz w11, no_tasks
 
-display_task_loop:
-    cmp w2, w1                   // Compare index with task count
-    b.ge end_display_tasks       // Exit loop if all tasks are displayed
+    // Load the base address of the tasks array
+    ldr x9, =tasks
 
-    // Calculate the address of the current task
-    lsl x3, x2, #8               // Multiply index by 256 (use x2 for 64-bit compatibility)
-    ldr x4, =tasks               // Base address of tasks
-    add x4, x4, x3               // Address of the current task
+    // Initialize index
+    mov w10, #0
 
-    // Display the current task
-    printStr "Task ["
-    add w5, w2, #1               // Convert 0-based index to 1-based
-    mov w0, w5                   // Load index into w0 (use 32-bit register here)
-    bl printInt                  // Print the task index
-    printStr "]: "
+    // Load the task and completed task indices
+    ldr x0, =task_index
+    ldrb w12, [x0]
+    ldr x0, =completed_task_index
+    ldrb w13, [x0]
 
-    mov x0, x4                   // Load the address of the task description
-    bl printStr                  // Print the task
+    printStr "\nPrioritized Tasks:"
 
-    // Increment the index
-    add w2, w2, #1
     b display_task_loop
 
-end_display_tasks:
-    printStr "End of tasks.\n"
-    b exit_display
+display_task_loop:
+    // Exit loop if all tasks are displayed
+    cmp w10, w11
+    bge exit_display
+
+    bl print_default_tasks_header
+    bl print_completed_tasks_header
+
+    // Load the task into x0 (first argument to printTask)
+    ldr w0, [x9, x10, lsl #2]
+    // Move the index into x1 (second argument to printTask)
+    mov x1, x10
+    bl printTask
+
+    add w10, w10, #1
+
+    b display_task_loop
+
+print_default_tasks_header:
+    // Default task index is stored in w12
+    cmp w10, w12
+    bne exit_print_header
+
+    printStr "\nDefault Tasks:"
+    ret
+
+print_completed_tasks_header:
+    // Completed task index is stored in w4
+    cmp w10, w13
+    bne exit_print_header
+
+    printStr "\nCompleted Tasks:"
+    ret
+
+exit_print_header:
+    ret
 
 no_tasks:
-    printStr "No tasks in the to-do list.\n"
+    printStr "\nNo tasks in the to-do list.\n"
+    b exit_display
 
 exit_display:
+    printStr ""
     // Restore lr from the stack
     ldp xzr, lr, [sp], #16
     ret
-
