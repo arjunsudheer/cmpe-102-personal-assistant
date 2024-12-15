@@ -3,8 +3,8 @@
 .set SHARED_DATA_INCLUDED, 1
 
 .data
-    // Task descriptions (128 task each taking 4 bytes)
-    tasks: .space 128 * 4
+    // Task descriptions (128 task each taking 8 bytes)
+    tasks: .space 128 * 8
     // Total number of tasks in the array
     total_tasks: .byte 0
 

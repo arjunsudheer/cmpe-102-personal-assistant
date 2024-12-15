@@ -19,7 +19,7 @@ display_tasks_main:
     ldr x9, =tasks
 
     // Initialize index
-    mov w10, #0
+    mov x10, #0
 
     // Load the task and completed task indices
     ldr x0, =task_index
@@ -33,33 +33,47 @@ display_tasks_main:
 
 display_task_loop:
     // Exit loop if all tasks are displayed
-    cmp w10, w11
+    cmp x10, x11
     bge exit_display
+
+    // Save x9 and x10 registers to the stack since they will get corrupted from call to printTask
+    stp x9, x10, [sp, #-16]!
+    // Save the x11 register to the stack since they will get corrupted from call to printTask
+    stp xzr, x11, [sp, #-16]!
+    // Save x12 and x13 registers to the stack since they will get corrupted from call to printTask
+    stp x12, x13, [sp, #-16]!
 
     bl print_default_tasks_header
     bl print_completed_tasks_header
 
     // Load the task into x0 (first argument to printTask)
-    ldr w0, [x9, x10, lsl #2]
+    ldr x0, [x9, x10, lsl #3]
     // Move the index into x1 (second argument to printTask)
     mov x1, x10
     bl printTask
 
-    add w10, w10, #1
+    // Load x12 and x13 registers from the stack
+    ldp x12, x13, [sp], #16
+    // Load the x11 register from the stack
+    ldp xzr, x11, [sp], #16
+    // Load x9 and x10 registers from the stack
+    ldp x9, x10, [sp], #16
+    
+    add x10, x10, #1
 
     b display_task_loop
 
 print_default_tasks_header:
-    // Default task index is stored in w12
-    cmp w10, w12
+    // Default task index is stored in x12
+    cmp x10, x12
     bne exit_print_header
 
     printStr "\nDefault Tasks:"
     ret
 
 print_completed_tasks_header:
-    // Completed task index is stored in w4
-    cmp w10, w13
+    // Completed task index is stored in x4
+    cmp x10, x13
     bne exit_print_header
 
     printStr "\nCompleted Tasks:"

@@ -64,28 +64,34 @@ shift_tasks:
     // w12 stores the index that the element should be inserted into
 
     // Save the task if the w11 equals the insertion index (w12)
-    cmp w11, w12
-    beq save_task_at_index
+    cmp x11, x12
+    ble save_task_at_index
 
     // Shift all array elements to the right by 1 until the desired index is reached
-    sub w10, w11, #1
-    ldr w13, [x9, x10, lsl #2]
-    str w13, [x9, x11, lsl #2]
+    sub x10, x11, #1
+    ldr x13, [x9, x10, lsl #3]
+    str x13, [x9, x11, lsl #3]
 
     // Decrement the array index
-    sub w11, w11, #1
+    sub x11, x11, #1
 
     b shift_tasks
 
 save_task_at_index:
+    // Save x9 and x12 registers to the stack since they may get corrupted from call to getString
+    stp x9, x12, [sp, #-16]!
+    
+    printStr "Enter task description: "
     // Load the buffer into x0 and the maxLength into x1 for getString arguments
     ldr x0, =user_input
-    mov w1, #32
     // Prompt user for task description
-    printStr "Enter task description: "
     bl getString
+
+    // Load x9 and x12 registers from the stack
+    ldp x9, x12, [sp], #16
+
     // Save user created task at the appropriate index
-    str w0, [x9, x11, lsl #2]
+    str x0, [x9, x12, lsl #3]
 
     // Increment total tasks by 1
     ldr x10, =total_tasks

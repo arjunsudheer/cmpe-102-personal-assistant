@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 
 // Get a 64-bit integer from the user
 int64_t get64BitInt(int64_t *a)
@@ -24,6 +25,12 @@ int32_t get32BitInt(int32_t *a)
     return 0;
 }
 
+// Print an integer
+void printInt(int64_t value)
+{
+    printf("Ans: %ld\n", value);
+}
+
 void clearInputBuffer()
 {
     int c;
@@ -32,19 +39,26 @@ void clearInputBuffer()
 }
 
 // Get a string from the user with buffer overflow protection
-char *getString(char *buffer, int maxLength)
+char *getString()
 {
+    int maxLength = 256;
+
     // Clear any leftover input in the buffer
     clearInputBuffer();
 
+    // Allocate memory for the input string
+    char *buffer = (char *)malloc(maxLength * sizeof(char));
+
     if (fgets(buffer, maxLength, stdin) == NULL)
     {
+        // Free the allocated memory on failure
+        free(buffer);
         return NULL;
     }
 
     size_t len = strlen(buffer);
 
-    // Remove trailing newline, if present
+    // Remove trailing newline if present
     if (len > 0 && buffer[len - 1] == '\n')
     {
         buffer[len - 1] = '\0';
@@ -60,13 +74,7 @@ char *getString(char *buffer, int maxLength)
 }
 
 // Print a task in format that indicates the index
-void printTask(const char *str, int index)
+void printTask(const char *ptr, int index)
 {
-    printf("%d. %s", index + 1, str);
-}
-
-// Print an integer
-void printInt(int64_t value)
-{
-    printf("Ans: %ld\n", value);
+    printf("%d) %s\n", index + 1, ptr);
 }
