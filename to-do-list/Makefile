@@ -7,7 +7,7 @@ LD = $(TOOLPATH)/ld
 CFLAGS = -g
 
 # Automatically find all .s files in the current directory
-SOURCES = calculator.s calculator.c
+SOURCES = to-do-list.s to-do-list.c
 OBJECTS = $(patsubst %.s,%.o,$(filter %.s, $(SOURCES)))
 TARGETS = $(patsubst %.c,%,$(patsubst %.s,%,$(SOURCES)))
 
