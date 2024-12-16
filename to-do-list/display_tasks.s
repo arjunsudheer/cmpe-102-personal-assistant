@@ -1,4 +1,4 @@
-.include "to-do-list/shared_data.s"
+.include "shared_data.s"
 
 .global display_tasks_main
 

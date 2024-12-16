@@ -1,9 +1,9 @@
 .include "debug.s"
-.include "to-do-list/add_task.s"
-.include "to-do-list/delete_task.s"
-.include "to-do-list/display_tasks.s"
-.include "to-do-list/mark_completed.s"
-.include "to-do-list/focus_session.s"
+.include "add_task.s"
+.include "delete_task.s"
+.include "display_tasks.s"
+.include "mark_completed.s"
+.include "focus_session.s"
 
 .global main
 
