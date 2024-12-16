@@ -1,12 +1,12 @@
 .include "debug.s"
-.include "basic_arithmetic_operations.s"
-.include "fibonacci.s"
-.include "factorial.s"
-.include "exponent.s"
-.include "square_root.s"
-.include "prime_number.s"
-.include "trig_functions.s"
-.include "logarithm.s"
+.include "calculator/basic_arithmetic_operations.s"
+.include "calculator/fibonacci.s"
+.include "calculator/factorial.s"
+.include "calculator/exponent.s"
+.include "calculator/square_root.s"
+.include "calculator/prime_number.s"
+.include "calculator/trig_functions.s"
+.include "calculator/logarithm.s"
 
 .global main
 
@@ -89,19 +89,19 @@ main:
     ldp x1, lr, [sp], #16
 
 call_addition_main:
-    bl floating_point_addition_main
+    bl addition_main
     b main
 
 call_subtraction_main:
-    bl floating_point_subtraction_main
+    bl subtraction_main
     b main
 
 call_multiplication_main:
-    bl floating_point_multiplication_main
+    bl multiplication_main
     b main
 
 call_division_main:
-    bl floating_point_division_main
+    bl division_main
     b main
 
 call_modulus_main:
