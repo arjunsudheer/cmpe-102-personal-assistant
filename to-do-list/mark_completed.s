@@ -5,17 +5,13 @@
 .text
 mark_completed_main:
     // Save registers and lr to the stack
-    stp x29, x30, [sp, #-16]!
-    mov x29, sp
+    stp xzr, lr, [sp, #-16]!
 
     // Check if there are no tasks
     ldr x0, =total_tasks
     ldrb w1, [x0]
     cbz w1, no_tasks_mark_completed
-    strb w1, [x0]                  // Store updated completed_task_index
 
-    // Display current tasks
-    printStr "\nCurrent Tasks:"
     bl display_tasks_main
 
     // Prompt user for the task index to mark as completed
@@ -30,37 +26,64 @@ mark_completed_main:
 
     // Validate task index
     ldr x0, =total_tasks
-    ldrb w3, [x0]           // Load total_tasks into w3
+    ldrb w3, [x0]
     cmp w2, w3
     bge invalid_index_mark_completed // If input >= total_tasks, it's invalid
 
+    ldr x0, =completed_task_index
+    ldrb w3, [x0]
+    cmp w2, w3
+    bge invalid_index_in_completed_section // Cannot mark already completed task as completed
+
     // Perform task marking logic
     ldr x9, =tasks          // Load tasks array base address
-    mov w10, w3             // w10 = total_tasks
+    mov w10, w3
+    sub w10, w10, #1        // w10 = completed_task_index - 1
     mov w11, w2             // w11 = index to mark as completed
-    mov w12, w10            // w12 = total_tasks (end of array)
+    
+    // Copy task to be marked as completed to x15
+    ldr x15, [x9, x11, lsl #3]
 
-shift_task_to_end_mark:
-    cmp w11, w12            // Compare index to move with end of array
-    bge update_completed_index_mark
+shift_tasks_left_completed:
+    cmp w11, w10
+    bge move_task_to_completed_section
 
-    // Calculate addresses for current task and the next slot
-    uxtw x11, w11           // Zero-extend w11 to x11
-    add x13, x9, x11, LSL #3 // Address of current task: tasks[w11]
+    sub x12, x10, #1
+    ldr x13, [x9, x10, lsl #3]          // Load current task value
+    str x13, [x9, x12, lsl #3]          // Store in the previous index
 
-    uxtw x12, w12           // Zero-extend w12 to x12
-    add x14, x9, x12, LSL #3 // Address of end slot: tasks[total_tasks]
+    add w11, w11, #1                    // Increment index
+    b shift_tasks_left_completed
 
-    ldr x15, [x13]          // Load current task value
-    str x15, [x14]          // Move task to the end slot
+move_task_to_completed_section:
+    // If the index of the task to be marked completed was a priority task, then the task_index must also be decremented by 1
+    ldr x0, =task_index
+    ldrb w1, [x0]
+    cmp w1, w11
+    ble decrement_task_index
+
+    b update_completed_index_mark
+
+decrement_task_index:
+    // Only decrement if task_index > 1
+    cbz w1, update_completed_index_mark
+
+    // Decrement task_index by 1
+    sub w1, w1, #1
+    strb w1, [x0]
+
     b update_completed_index_mark
 
 update_completed_index_mark:
     // Update completed_task_index
+    // Decrement completed_task_index by 1
     ldr x0, =completed_task_index
-    ldrb w13, [x0]
-    add w13, w13, #1        // Increment completed task index
-    strb w13, [x0]
+    ldrb w1, [x0]
+    sub w1, w1, #1
+    strb w1, [x0]
+
+    // Save the task marked as completed at the updated completed_task_index
+    str x15, [x9, x1, lsl #3]
 
     printStr "Task marked as completed successfully!\n"
     b end_mark_completed
@@ -69,11 +92,15 @@ invalid_index_mark_completed:
     printStr "Error: Invalid task index.\n"
     b end_mark_completed
 
+invalid_index_in_completed_section:
+    printStr "Error: Task is already marked as completed.\n"
+    b end_mark_completed
+
 no_tasks_mark_completed:
-    printStr "No tasks to mark as completed.\n"
+    printStr "\nNo tasks to mark as completed.\n"
+    b end_mark_completed
 
 end_mark_completed:
     // Restore registers and lr from the stack
-    ldp x29, x30, [sp], #16
+    ldp xzr, lr, [sp], #16
     ret
-

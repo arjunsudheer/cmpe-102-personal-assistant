@@ -5,8 +5,7 @@
 .text
 delete_task_main:
     // Save registers and lr to the stack
-    stp x29, x30, [sp, #-16]!
-    mov x29, sp
+    stp xzr, lr, [sp, #-16]!
 
     // Check if there are no tasks
     ldr x0, =total_tasks
@@ -68,10 +67,9 @@ invalid_index:
     b end_delete_task
 
 no_tasks_message:
-    printStr "No tasks to delete.\n"
+    printStr "\nNo tasks to delete.\n"
 
 end_delete_task:
     // Restore registers and lr from the stack
-    ldp x29, x30, [sp], #16
+    ldp xzr, lr, [sp], #16
     ret
-
