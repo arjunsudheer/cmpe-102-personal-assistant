@@ -1,19 +1,19 @@
-// Start guard
+// shared_data.s
 .ifndef SHARED_DATA_INCLUDED
 .set SHARED_DATA_INCLUDED, 1
 
 .data
-    // Task descriptions (128 task each taking 8 bytes)
+    .align 4
     tasks: .space 128 * 8
-    // Total number of tasks in the array
+    .align 4
     total_tasks: .byte 0
-
-    // Indices for task sections in the tasks array
     priority_task_index: .byte 0
     task_index: .byte 0
     completed_task_index: .byte 0
-
-    // Temporary variable for user input
+    .align 4
+    int_input: .word 0
+    .align 4
     user_input: .space 256
-// End guard
+
 .endif
+

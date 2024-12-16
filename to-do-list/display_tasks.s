@@ -34,7 +34,7 @@ display_tasks_main:
 display_task_loop:
     // Exit loop if all tasks are displayed
     cmp x10, x11
-    bge exit_display
+    bge check_completed_tasks_header
 
     // Save x9 and x10 registers to the stack since they will get corrupted from call to printTask
     stp x9, x10, [sp, #-16]!
@@ -63,6 +63,28 @@ display_task_loop:
 
     b display_task_loop
 
+check_completed_tasks_header:
+    // Print "Completed Tasks" header if there are completed tasks
+    cmp w13, #0              // Check if completed_task_index > 0
+    ble exit_display         // If no completed tasks, exit
+
+    printStr "\nCompleted Tasks:"
+    mov x10, x13             // Set index to completed_task_index
+    b display_completed_loop
+
+display_completed_loop:
+    // Exit loop if all tasks are displayed
+    cmp x10, x11
+    bge exit_display
+
+    // Load the task into x0
+    ldr x0, [x9, x10, lsl #3]
+    mov x1, x10
+    bl printTask
+
+    add x10, x10, #1
+    b display_completed_loop
+
 print_default_tasks_header:
     // Default task index is stored in x12
     cmp x10, x12
@@ -72,7 +94,7 @@ print_default_tasks_header:
     ret
 
 print_completed_tasks_header:
-    // Completed task index is stored in x4
+    // Completed task index is stored in x13
     cmp x10, x13
     bne exit_print_header
 
@@ -91,3 +113,4 @@ exit_display:
     // Restore lr from the stack
     ldp xzr, lr, [sp], #16
     ret
+
